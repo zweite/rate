@@ -1,5 +1,5 @@
 # rate
-simple limit qps
+Rate Limiter
 
 
 quick start
