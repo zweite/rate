@@ -6,6 +6,7 @@ import "time"
 type Rate struct {
 	tokenBucket chan struct{}
 	stop        chan struct{}
+	restart     chan struct{}
 	limit       int
 	qps         int64
 }
@@ -15,6 +16,7 @@ func NewRate(limit int) *Rate {
 	return &Rate{
 		tokenBucket: make(chan struct{}, 1),
 		stop:        make(chan struct{}),
+		restart:     make(chan struct{}),
 		limit:       limit,
 	}
 }
@@ -27,6 +29,7 @@ func (r *Rate) Run() {
 		case <-tick.C:
 			r.tokenBucket <- struct{}{}
 		case <-r.stop:
+			r.restart <- struct{}{}
 			return
 		}
 	}
@@ -41,6 +44,7 @@ func (r *Rate) Stop() {
 func (r *Rate) Restart(limit int) {
 	r.limit = limit
 	r.Stop()
+	<-r.restart
 	go r.Run()
 }
 
