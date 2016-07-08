@@ -1,6 +1,9 @@
 package rate
 
-import "time"
+import (
+	"sync/atomic"
+	"time"
+)
 
 // Rate control speed for QPS
 type Rate struct {
@@ -49,11 +52,11 @@ func (r *Rate) Restart(limit int) {
 }
 
 // GetToken control QPS
-func (r *Rate) GetToken(exp time.Duration) bool {
-	timer := time.NewTimer(exp)
+func (r *Rate) GetToken() bool {
+	timer := time.NewTimer(time.Second / time.Duration(r.limit))
 	select {
 	case <-r.tokenBucket:
-		r.qps++
+		r.qps = atomic.AddInt64(&r.qps, 1)
 		return true
 	case <-timer.C:
 		return false

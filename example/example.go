@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math/rand"
 	"runtime"
 	"sync"
 	"time"
@@ -10,7 +11,8 @@ import (
 
 func main() {
 	runtime.GOMAXPROCS(1)
-	r := rate.NewRate(100)
+	// set the QPS
+	r := rate.NewRate(200)
 	go r.Run()
 
 	go func() {
@@ -27,12 +29,13 @@ func main() {
 	count := 0
 	num := 100000
 
+	seed := 5 // if seed down then QPS will up
 	for i := 0; i < num; i++ {
-		time.Sleep(5 * time.Millisecond)
+		time.Sleep(time.Duration(rand.Intn(seed)) * time.Millisecond)
 		wg.Add(1)
 		go func(j int) {
 			defer wg.Done()
-			if r.GetToken(1 * time.Millisecond) {
+			if r.GetToken() {
 				count++
 			}
 		}(i)
