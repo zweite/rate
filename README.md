@@ -29,7 +29,7 @@ for i := 0; i < num; i++ {
 	wg.Add(1)
 	go func(j int) {
 		defer wg.Done()
-		if r.GetToken(1 * time.Millisecond) {
+		if r.GetToken() {
 			count++
 		}
 	}(i)
